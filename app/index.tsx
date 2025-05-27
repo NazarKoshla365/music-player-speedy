@@ -1,4 +1,4 @@
-import { App } from "./components/tabs/Home";
+import { App } from "./components/Home";
 
 export default function Index() {
   return  <App/>

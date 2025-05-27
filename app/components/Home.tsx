@@ -1,5 +1,5 @@
-import { View,Text } from "react-native"
-import { SortTabs } from "../SortTabs"
+import { Text, View } from "react-native"
+import { SortTabs } from "./SortTabs"
 
 export const App = () => {
     return (
