@@ -1,22 +1,25 @@
 import { Tabs } from "expo-router";
 import { useRouter, useSegments } from "expo-router";
-import { Text, View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import "@/global.css"
+import { JSX } from "react";
+
+
 
 interface Tab {
   name: string;
-  label: string;
-}
-
-interface Tab {
-  name: string;
-  label: string;
+  icon: (isActive: boolean) => JSX.Element;
 }
 
 const tabs: Tab[] = [
-  { name: "index", label: "Home" },
-  { name: "favorite", label: "Favorite" },
-  { name: "settings", label: "Settings" },
+  { name: "index", icon: (isActive) => <FontAwesome5 name="music" size={28} color={isActive ? "black" : "gray"} /> },
+  { name: "favorite", icon: (isActive) => <MaterialIcons name={isActive ? 'favorite' : 'favorite-border'} size={28} color={isActive ? "black" : "gray"} /> },
+  { name: "songs", icon: (isActive) => <MaterialCommunityIcons name={isActive ? 'playlist-music' : 'playlist-music-outline'} size={28} color={isActive ? "black" : "gray"} /> },
+  { name: "settings", icon: (isActive) => <Ionicons name={isActive ? 'settings-sharp' : 'settings-outline'} size={28} color={isActive ? "black" : "gray"} /> },
 ]
 
 type TabName = typeof tabs[number]["name"];
@@ -30,24 +33,27 @@ const CustomTabBar = () => {
       router.push("/"); // головна сторінка
     } else if (tabName === "favorite") {
       router.push("/favorite");
-    } else if (tabName === "settings") {
+    } else if (tabName === "songs") {
+      router.push("/songs");
+    }
+    else if (tabName === "settings") {
       router.push("/settings");
     }
   };
 
   return (
-    <View className="flex-row justify-around p-2 bg-gray-200">
+    <View className="flex-row items-center justify-center p-2 bg-gray-200 space-x-8" >
       {tabs.map((tab) => {
-        const isActive = segments.includes(tab.name);
+        const current = segments[0] ?? "index";
+        const isActive = current === tab.name;
         return (
           <TouchableOpacity
             key={tab.name}
             onPress={() => pushRoute(tab.name)}
-            className={`py-2 border-b-2 ${isActive ? "border-blue-500" : "border-transparent"}`}
+            className="py-2 flex-1 items-center justify-center"
+               style={{ width: 60 }}
           >
-            <Text className={isActive ? "text-blue-500" : "text-gray-500"}>
-              {tab.label}
-            </Text>
+            {tab.icon(isActive)}
           </TouchableOpacity>
         );
       })}

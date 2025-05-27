@@ -1,4 +1,4 @@
-import { Settings } from "./components/Settings"
+import { Settings } from "./components/tabs/Settings"
 export default function settings  () {
     return <Settings/>
 }
