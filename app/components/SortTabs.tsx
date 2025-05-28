@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView ,Alert} from "react-native";
+import * as MediaLibrary from 'expo-media-library';
+
 import { Songs } from "./Songs";
 import { Playlists } from "./Playlists";
 import { Favorites } from "./Favorites";
@@ -7,6 +9,22 @@ import { Albums } from "./Albums";
 import { Artists } from "./Artists";
 
 export const SortTabs = () => {
+  const [activeTab, setActiveTab] = useState("songs")
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+  useEffect(() => {
+    (async () => {
+       console.log("Запитуємо дозвіл на медіатеку...");
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+        console.log("Статус дозволу:", status);
+      setHasPermission(status === 'granted')
+      if (status !== 'granted') {
+        Alert.alert('Дозвіл потрібен', 'Щоб читати музику, потрібен доступ до медіатеки');
+      }
+    })()
+  }, [])
+  console.log("Активна вкладка:", activeTab);
+  console.log("Дозвіл на медіатеку:", hasPermission);
+
   const sortTabs = [
     { name: "songs", label: "Songs" },
     { name: "favorites", label: "Favorites" },
@@ -15,7 +33,8 @@ export const SortTabs = () => {
     { name: "artists", label: "Artists" },
   ];
 
-  const [activeTab, setActiveTab] = useState("songs")
+
+
 
   return (
 
@@ -45,11 +64,11 @@ export const SortTabs = () => {
         </ScrollView>
       </View >
       <View>
-        {activeTab === "songs" && <Songs/> }
-        {activeTab === "favorites" && <Favorites/>}
-        {activeTab === "playlists" && <Playlists/>}
-        {activeTab === "albums" && <Albums/>}
-        {activeTab === "artists" && <Artists/>}
+        {activeTab === "songs" && <Songs />}
+        {activeTab === "favorites" && <Favorites />}
+        {activeTab === "playlists" && <Playlists />}
+        {activeTab === "albums" && <Albums />}
+        {activeTab === "artists" && <Artists />}
       </View>
     </View>
   );
