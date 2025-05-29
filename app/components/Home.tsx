@@ -5,7 +5,6 @@ export const App = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Image source={require('@/assets/images/speedy-logo.png')} style={styles.image} resizeMode="cover"></Image>
-      {/* <Text style={styles.heading}>Hello Man</Text> */}
       <SortTabs />
     </SafeAreaView>
   );
