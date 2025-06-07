@@ -1,105 +1,18 @@
 
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { Audio } from 'expo-av';
 import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useState } from "react";
 import { Button, FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
-interface SongData {
-    id: string;
-    title: string;
-    artist: string;
-    duration: string;
-    uri: string;
-}
-
-function formatTitle(filename: string) {
-    if (filename) {
-
-        const cleaned = filename
-            .replace(/_/g, ' ')
-            .replace(/\.(mp3|wav|m4a)$/i, '')
-            .replace(/\s*\(.*?\)/g, '')
-            .replace(/\s*-\s*/g, ' - ')
-            .replace(/ +/g, ' ')
-            .trim();
-
-        const parts = cleaned.split(' - ');
-        if (parts.length === 2) return parts[1];
-        return cleaned;
-    }
-    return "Unknown Title";
-}
-function formatArtist(filename: string) {
-    if (filename) {
-        const cleaned = filename
-            .replace(/_/g, ' ')
-            .replace(/\.(mp3|wav|m4a)$/i, '')
-            .replace(/\s*\(.*?\)/g, '')
-            .replace(/\s*-\s*/g, ' - ')
-            .replace(/ +/g, ' ')
-            .trim();
-
-        const parts = cleaned.split(' - ');
-        if (parts.length === 2) return parts[0];
-        return "Unknown Artist";
-    }
-    return "Unknown Artist";
-}
-
-function calculateTime(duration: number) {
-    const minutes = Math.floor(duration / 60)
-    const seconds = Math.floor(duration % 60)
-    const time = `${minutes}:${seconds.toString().padStart(2, '0')}`
-    return time
-}
-
+import { usePlayerStore } from "../store/playerStore";
+import { useAudioControls } from '../hooks/useAudioControls';
+import { formatArtist,formatTitle,calculateTime } from "../utils/audioUtils";
 
 export const Songs = () => {
-    const [sound, setSound] = useState<Audio.Sound | null>(null)
-
-    const [songs, setSongs] = useState<MediaLibrary.Asset[]>([])
+    const {songs,setSongs,isPlay,activeSongData,itemPlay, setIsOpenModal } = usePlayerStore()
+    const {togglePlayBack,PlaySong,PlayNextSong} = useAudioControls()
     const [songsCount, setSongsCount] = useState<number>(0)
-    const [activeSongData, setActiveSongData] = useState<SongData | null>(null)
-    const [isPlay, setIsPlay] = useState<boolean>(true)
-
-    async function PlaySong(song: MediaLibrary.Asset) {
-
-        if (sound) {
-            await sound.unloadAsync()
-        }
-
-        const { sound: newSound } = await Audio.Sound.createAsync(
-            { uri: song.uri },
-            { shouldPlay: true }
-        )
-        setSound(newSound)
-
-        setActiveSongData({
-            id: song.id,
-            title: formatTitle(song.filename),
-            artist: formatArtist(song.filename),
-            duration: calculateTime(song.duration),
-            uri: song.uri
-        })
-        console.log(activeSongData)
-
-    }
-    async function togglePlayBack() {
-        if (!sound) return
-        const status = await sound.getStatusAsync()
-        console.log(status)
-        if (status.isLoaded) {
-            if (status.isPlaying) {
-                await sound.pauseAsync()
-                setIsPlay(false)
-            } else {
-                await sound.playAsync()
-                setIsPlay(true)
-            }
-
-
-        }
-    }
+    
+    
     useEffect(() => {
         (async () => {
             const media = await MediaLibrary.getAssetsAsync({
@@ -110,9 +23,11 @@ export const Songs = () => {
             const allMp3s = media.assets.filter(asset =>
                 asset.filename.toLowerCase().endsWith('.mp3')
             );
-
-            setSongs(allMp3s)
-            setSongsCount(allMp3s.length)
+            const filteredMp3s = allMp3s.filter(asset =>
+                !/\(\d+\)\.mp3$/i.test(asset.filename)
+            )
+            setSongs(filteredMp3s)
+            setSongsCount(filteredMp3s.length)
         })()
     }, [])
     console.log(songs)
@@ -143,31 +58,33 @@ export const Songs = () => {
                     </Pressable>
                 )}
             />
+            {itemPlay && (
+                <Pressable onPress={() => setIsOpenModal(true)}>
+                    <View style={styles.itemPlay}>
+                        <View style={styles.itemPlayDesc}>
+                            <Image source={require('@/assets/images/cover.jpg')} style={styles.coverImage} resizeMode="cover" />
+                            <View style={styles.itemTextView}>
+                                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>{activeSongData?.title}</Text>
+                                <Text style={styles.artist}>{activeSongData?.artist}</Text>
+                            </View>
+                        </View>
 
-            <View style={styles.itemPlay}>
-                <View style={styles.itemPlayDesc}>
-                    <Image source={require('@/assets/images/cover.jpg')} style={styles.coverImage} resizeMode="cover" />
-                    <View style={styles.itemTextView}>
-                        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>song</Text>
-                        <Text style={styles.artist}>ok</Text>
+                        <View style={styles.playViewBtns}>
+                            <Pressable style={styles.btnPlay} onPress={togglePlayBack}>
+                                {isPlay ? <FontAwesome5 name="pause" size={24} color="black" /> : <FontAwesome5 name="play" size={24} color="black" />}
+                            </Pressable>
+                            <Pressable onPress={PlayNextSong}>
+                                <FontAwesome5 name="step-forward" size={24} color="black" />
+                            </Pressable>
+                        </View>
+
                     </View>
-                </View>
+                </Pressable>
 
-                <View style={styles.playViewBtns}>
-                    <Pressable style={styles.btnPlay} onPress={togglePlayBack}>
-                        {isPlay ? <FontAwesome5 name="pause" size={24} color="black" /> : <FontAwesome5 name="play" size={24} color="black" />}
-
-                    </Pressable>
-                    <Pressable>
-                        <FontAwesome5 name="step-forward" size={24} color="black" />
-                    </Pressable>
-                </View>
-            </View>
-
+            )}
         </View>
     )
 }
-
 const styles = StyleSheet.create({
     container: {
         padding: 16,

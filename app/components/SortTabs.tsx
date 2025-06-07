@@ -3,17 +3,19 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, useWindowD
 import * as MediaLibrary from 'expo-media-library';
 import { TabView, SceneMap } from 'react-native-tab-view'
 
+
 import { Songs } from "./Songs";
 import { Playlists } from "./Playlists";
 import { Favorites } from "./Favorites";
 import { Albums } from "./Albums";
 import { Artists } from "./Artists";
 
+
 export const SortTabs = () => {
   const layout = useWindowDimensions();
-
   const [index, setIndex] = useState(0);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+
   useEffect(() => {
     (async () => {
       console.log("Запитуємо дозвіл на медіатеку...");
@@ -36,7 +38,7 @@ export const SortTabs = () => {
     { key: "artists", title: "Artists" },
   ];
   const renderScene = SceneMap({
-    songs: Songs,
+    songs: Songs ,
     favorites: Favorites,
     playlists: Playlists,
     albums: Albums,
@@ -75,7 +77,7 @@ export const SortTabs = () => {
         renderScene={renderScene}
         onIndexChange={setIndex}
         initialLayout={{ width: layout.width }}
-        renderTabBar={() => null} // ❌ приховуємо стандартний таббар
+        renderTabBar={() => null}
       />
     </View>
   );
@@ -114,7 +116,7 @@ const styles = StyleSheet.create({
     color: "#000",
     fontSize: 18,
     fontFamily: "Montserrat_400Regular",
-    
+
 
   },
 });
