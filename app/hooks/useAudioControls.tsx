@@ -1,4 +1,4 @@
-import { Audio } from 'expo-av';
+import { Audio} from 'expo-av';
 import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useState } from "react";
 import { usePlayerStore } from "../store/playerStore";
@@ -114,17 +114,14 @@ export const useAudioControls = () => {
         } else {
             setIsShuffle(true)
         }
-        // if(!songs)return
-
-        // await PlaySongbyIndex(randomIndex)
     }
-    useEffect(() => {
-        return () => {
-            if (sound) {
-                sound.unloadAsync()
-            }
+   useEffect(()=>{
+     return () => {
+          if (sound) {
+            sound.unloadAsync()
+          }
         }
-    }, [sound])
+   },[sound])
 
     return { togglePlayBack, toggleRepeatPlayback, toggleShufflePlayback, PlaySong, PlayNextSong, PlayPrevSong }
 }

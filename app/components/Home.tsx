@@ -2,15 +2,25 @@ import { SafeAreaView, StyleSheet, Image } from "react-native";
 import { SortTabs } from "./SortTabs";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { InterfacePlayer } from "./InterfacePlayer";
+import { useEffect } from "react";
 
-
+import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from "expo-av";
 export const App = () => {
+  useEffect(() => {
+    Audio.setAudioModeAsync({
+      staysActiveInBackground: true,
+      playsInSilentModeIOS: false,
+      interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+      interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+      shouldDuckAndroid: true,
+    })
+  }, [])
   return (
     <GestureHandlerRootView>
       <SafeAreaView style={styles.container}>
         <Image source={require('@/assets/images/speedy-logo.png')} style={styles.image} resizeMode="cover"></Image>
         <SortTabs />
-        <InterfacePlayer/>
+        <InterfacePlayer />
       </SafeAreaView>
     </GestureHandlerRootView>
   );
