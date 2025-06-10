@@ -5,15 +5,19 @@ import { useEffect, useState } from "react";
 import { Button, FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { usePlayerStore } from "../store/playerStore";
 import { useAudioControls } from '../hooks/useAudioControls';
-import { formatArtist,formatTitle,calculateTime } from "../utils/audioUtils";
+import { formatArtist, formatTitle, calculateTime } from "../utils/audioUtils";
 
-export const Songs = () => {
-    const {songs,setSongs,isPlay,activeSongData,itemPlay, setIsOpenModal } = usePlayerStore()
-    const {togglePlayBack,PlaySong,PlayNextSong} = useAudioControls()
+interface SongsProps{
+    hasPermission:boolean|null
+}
+export const Songs = ({ hasPermission }:SongsProps) => {
+    const { songs, setSongs, isPlay, activeSongData, itemPlay, setIsOpenModal } = usePlayerStore()
+    const { togglePlayBack, PlaySong, PlayNextSong } = useAudioControls()
     const [songsCount, setSongsCount] = useState<number>(0)
-    
-    
+
+
     useEffect(() => {
+        if (!hasPermission) return;
         (async () => {
             const media = await MediaLibrary.getAssetsAsync({
                 mediaType: 'audio',
@@ -29,7 +33,10 @@ export const Songs = () => {
             setSongs(filteredMp3s)
             setSongsCount(filteredMp3s.length)
         })()
-    }, [])
+    }, [hasPermission])
+    if (hasPermission === false) {
+        return <Text>No access to media library. Please enable permissions in settings.</Text>;
+    }
     console.log(songs)
     return (
         <View style={styles.container}>
@@ -38,6 +45,7 @@ export const Songs = () => {
                 <Button title="Sort button"></Button>
             </View>
             <FlatList
+                ListEmptyComponent={<Text>No songs found</Text>}
                 style={styles.songList}
                 data={songs}
                 keyExtractor={item => item.id}
@@ -99,7 +107,7 @@ const styles = StyleSheet.create({
     },
     topViewText: {
         fontSize: 16,
-        fontFamily: 'Montserrat_500Medium',
+        
         color: '#333',
     },
     songList: {
@@ -140,17 +148,17 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 16,
         color: '#333',
-        fontFamily: 'Montserrat_600SemiBol',
+      
     },
     artist: {
         fontSize: 14,
-        fontFamily: 'Montserrat_400Regular',
+      
         color: '#666',
         marginTop: 4,
     },
     time: {
         fontSize: 13,
-        fontFamily: 'Montserrat_300Light',
+     
         color: '#666',
     },
     itemPlay: {

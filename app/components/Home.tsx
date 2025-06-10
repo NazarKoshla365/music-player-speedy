@@ -1,33 +1,18 @@
-import { SafeAreaView, Text, StyleSheet, Image } from "react-native";
+import { SafeAreaView, StyleSheet, Image } from "react-native";
 import { SortTabs } from "./SortTabs";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { InterfacePlayer } from "./InterfacePlayer";
-import { useEffect } from "react";
-import { Audio,InterruptionModeAndroid,InterruptionModeIOS } from "expo-av";
 
-
-useEffect(() => {
-  (async () => {
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      staysActiveInBackground: true,
-      interruptionModeIOS: InterruptionModeIOS.DoNotMix,
-      playsInSilentModeIOS: true,
-      interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
-      shouldDuckAndroid: true,
-      playThroughEarpieceAndroid: false,
-
-    })
-  })()
-
-}, [])
 
 export const App = () => {
   return (
-    <SafeAreaView style={styles.container}>
-      <Image source={require('@/assets/images/speedy-logo.png')} style={styles.image} resizeMode="cover"></Image>
-      <SortTabs />
-      <InterfacePlayer />
-    </SafeAreaView>
+    <GestureHandlerRootView>
+      <SafeAreaView style={styles.container}>
+        <Image source={require('@/assets/images/speedy-logo.png')} style={styles.image} resizeMode="cover"></Image>
+        <SortTabs />
+        <InterfacePlayer/>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 };
 
@@ -46,6 +31,7 @@ const styles = StyleSheet.create({
 
 
   },
+
   heading: {
     fontSize: 32,
     fontWeight: "bold",

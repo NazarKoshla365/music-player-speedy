@@ -22,9 +22,6 @@ export const SortTabs = () => {
       const { status } = await MediaLibrary.requestPermissionsAsync();
       console.log("Статус дозволу:", status);
       setHasPermission(status === 'granted')
-      if (status !== 'granted') {
-        Alert.alert('Дозвіл потрібен', 'Щоб читати музику, потрібен доступ до медіатеки');
-      }
     })()
   }, [])
   console.log("Активна вкладка:", index);
@@ -38,7 +35,7 @@ export const SortTabs = () => {
     { key: "artists", title: "Artists" },
   ];
   const renderScene = SceneMap({
-    songs: Songs ,
+     songs: () => <Songs hasPermission={hasPermission} />,
     favorites: Favorites,
     playlists: Playlists,
     albums: Albums,
@@ -110,12 +107,12 @@ const styles = StyleSheet.create({
   activeText: {
     color: "#fff",
     fontSize: 18,
-    fontFamily: "Montserrat_600SemiBold",
+    
   },
   inactiveText: {
     color: "#000",
     fontSize: 18,
-    fontFamily: "Montserrat_400Regular",
+    
 
 
   },
