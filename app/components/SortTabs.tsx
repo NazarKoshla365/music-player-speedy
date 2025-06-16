@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, useWindowDimensions } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView,  useWindowDimensions } from "react-native";
 import * as MediaLibrary from 'expo-media-library';
 import { TabView, SceneMap } from 'react-native-tab-view'
 
