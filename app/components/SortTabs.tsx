@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView,  useWindowDimensions } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from "react-native";
 import * as MediaLibrary from 'expo-media-library';
 import { TabView, SceneMap } from 'react-native-tab-view'
 
@@ -23,11 +23,11 @@ export const SortTabs = () => {
       console.log("Статус дозволу:", status);
       setHasPermission(status === 'granted')
     })()
-  }, [])
+  }, [])  
   console.log("Активна вкладка:", index);
   console.log("Дозвіл на медіатеку:", hasPermission);
 
-  const routes = [
+  const routes =  [
     { key: "songs", title: "Songs" },
     { key: "favorites", title: "Favorites" },
     { key: "playlists", title: "Playlists" },
@@ -35,7 +35,7 @@ export const SortTabs = () => {
     { key: "artists", title: "Artists" },
   ];
   const renderScene = SceneMap({
-     songs: () => <Songs hasPermission={hasPermission} />,
+    songs: () => <Songs hasPermission={hasPermission} />,
     favorites: Favorites,
     playlists: Playlists,
     albums: Albums,
@@ -107,12 +107,12 @@ const styles = StyleSheet.create({
   activeText: {
     color: "#fff",
     fontSize: 18,
-    
+
   },
   inactiveText: {
     color: "#000",
     fontSize: 18,
-    
+
 
 
   },

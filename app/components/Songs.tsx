@@ -1,18 +1,18 @@
 
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import * as MediaLibrary from 'expo-media-library';
-import { useEffect, useState } from "react";
-import { Button, FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Button, FlatList, Image, Pressable, StyleSheet, Text, View, ListRenderItem } from "react-native";
 import { usePlayerStore } from "../store/playerStore";
 import { useAudioControls } from '../hooks/useAudioControls';
-import { formatArtist, formatTitle, calculateTime } from "../utils/audioUtils";
+import { SongItem } from './SongItem';
 
-interface SongsProps{
-    hasPermission:boolean|null
+interface SongsProps {
+    hasPermission: boolean | null
 }
-export const Songs = ({ hasPermission }:SongsProps) => {
+export const Songs = ({ hasPermission }: SongsProps) => {
     const { songs, setSongs, isPlay, activeSongData, itemPlay, setIsOpenModal } = usePlayerStore()
-    const { togglePlayBack, PlaySong, PlayNextSong } = useAudioControls()
+    const { togglePlayBack, PlayNextSong, PlaySong } = useAudioControls()
     const [songsCount, setSongsCount] = useState<number>(0)
 
 
@@ -37,7 +37,11 @@ export const Songs = ({ hasPermission }:SongsProps) => {
     if (hasPermission === false) {
         return <Text>No access to media library. Please enable permissions in settings.</Text>;
     }
-    console.log(songs)
+    console.log("---------------")
+
+    const renderItem: ListRenderItem<MediaLibrary.Asset> = useCallback(({ item }) => (
+        <SongItem item={item} isActive={item.id === activeSongData?.id} onPress={PlaySong} />
+    ), [activeSongData?.id, PlaySong])
     return (
         <View style={styles.container}>
             <View style={styles.topView}>
@@ -45,26 +49,16 @@ export const Songs = ({ hasPermission }:SongsProps) => {
                 <Button title="Sort button"></Button>
             </View>
             <FlatList
+                renderItem={renderItem}
                 ListEmptyComponent={<Text>No songs found</Text>}
+                initialNumToRender={10}
+                maxToRenderPerBatch={10}
                 style={styles.songList}
                 data={songs}
                 keyExtractor={item => item.id}
                 showsVerticalScrollIndicator={false}
-                renderItem={({ item }) => (
-
-                    <Pressable onPress={() => PlaySong(item)} >
-                        <View style={item.id === activeSongData?.id ? styles.activeItem : styles.item}  >
-                            <View style={styles.itemDesc}>
-                                <Image source={require('@/assets/images/cover.jpg')} style={styles.coverImage} resizeMode="cover" />
-                                <View style={styles.itemTextView}>
-                                    <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>{formatTitle(item.filename)}</Text>
-                                    <Text style={styles.artist}>{formatArtist(item.filename)}</Text>
-                                </View>
-                            </View>
-                            <Text style={styles.time}>{calculateTime(item.duration)}</Text>
-                        </View>
-                    </Pressable>
-                )}
+                windowSize={5}
+                 removeClippedSubviews={true}
             />
             {itemPlay && (
                 <Pressable onPress={() => setIsOpenModal(true)}>
@@ -107,33 +101,11 @@ const styles = StyleSheet.create({
     },
     topViewText: {
         fontSize: 16,
-        
+
         color: '#333',
     },
     songList: {
         flex: 1,
-    },
-    item: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 10,
-    },
-    activeItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 16,
-
-        backgroundColor: '#e0e0e0'
-    },
-    itemDesc: {
-        flexDirection: "row",
-        alignItems: 'center',
     },
     coverImage: {
         width: 60,
@@ -145,20 +117,21 @@ const styles = StyleSheet.create({
     itemTextView: {
         maxWidth: 160,
     },
+
     title: {
         fontSize: 16,
         color: '#333',
-      
+
     },
     artist: {
         fontSize: 14,
-      
+
         color: '#666',
         marginTop: 4,
     },
     time: {
         fontSize: 13,
-     
+
         color: '#666',
     },
     itemPlay: {
