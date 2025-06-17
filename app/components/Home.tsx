@@ -4,9 +4,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { InterfacePlayer } from "./InterfacePlayer";
 import { useEffect } from "react";
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from "expo-av";
-
-
-
 export const App = () => {
   useEffect(() => {
     Audio.setAudioModeAsync({

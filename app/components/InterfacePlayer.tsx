@@ -3,18 +3,15 @@ import { useRef, useCallback, useMemo, useEffect, useState } from "react";
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePlayerStore } from "../store/playerStore";
 import { AudioBarProgress } from "./AudioBarProgress";
-import { useAudioControls } from "../hooks/useAudioControls";
 import { formatMilliseconds } from "../utils/audioUtils";
+import { PlaybackControll } from "./PlayBackControll";
 
 export const InterfacePlayer = () => {
-    const { isShuffle, isSoundLoop, isPlay, isOpenModal, activeSongData, setIsOpenModal } = usePlayerStore();
-    const { togglePlayBack, toggleRepeatPlayback, toggleShufflePlayback, PlayNextSong, PlayPrevSong } = useAudioControls();
+    const {  isOpenModal, activeSongData, setIsOpenModal } = usePlayerStore();
     const [position, setPosition] = useState<number>(0);
     const [duration, setDuration] = useState<number>(1);
 
@@ -61,7 +58,7 @@ export const InterfacePlayer = () => {
 
                         <View style={styles.contentDescContainer}>
                             <Image style={styles.imageCover} source={require('@/assets/images/cover.jpg')} />
-                            <Text style={styles.title}>{activeSongData?.title}</Text>
+                            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>{activeSongData?.title}</Text>
                             <Text style={styles.artist}>{activeSongData?.artist}</Text>
                         </View>
 
@@ -78,35 +75,8 @@ export const InterfacePlayer = () => {
                             </View>
                         </View>
                     </View>
-
                     {/* Playback Controls */}
-                    <View style={styles.viewPlay}>
-                        <Pressable style={styles.iconButton} onPress={toggleShufflePlayback}>
-                            <FontAwesome6 name="shuffle" size={18} color={isShuffle ? "#4c9aff" : "#333"} />
-                        </Pressable>
-
-                        <Pressable style={styles.iconButton} onPress={PlayPrevSong}>
-                            <FontAwesome5 name="step-backward" size={22} color="#333" />
-                        </Pressable>
-
-                        <Pressable style={[styles.iconButton, styles.playButton]} onPress={togglePlayBack}>
-                            {isPlay
-                                ? <FontAwesome5 name="pause" size={26} color="#fff" />
-                                : <FontAwesome5 style={{ marginLeft: 4 }} name="play" size={26} color="#fff" />}
-                        </Pressable>
-
-                        <Pressable style={styles.iconButton} onPress={PlayNextSong}>
-                            <FontAwesome5 name="step-forward" size={22} color="#333" />
-                        </Pressable>
-
-                        <Pressable style={styles.iconButton} onPress={toggleRepeatPlayback}>
-                            <MaterialCommunityIcons
-                                name={isSoundLoop ? "repeat-once" : "repeat"}
-                                size={22}
-                                color={isSoundLoop ? "#4c9aff" : "#333"}
-                            />
-                        </Pressable>
-                    </View>
+                   <PlaybackControll/>
                 </BottomSheetView>
             </LinearGradient>
         </BottomSheet>
@@ -123,7 +93,7 @@ const styles = StyleSheet.create({
     contentContainer: {
         flex: 1,
         padding: 24,
-        justifyContent: 'space-between', // 👈 розділяє верхній і нижній блок
+        justifyContent: 'space-between', 
     },
     upperContent: {
         alignItems: 'center',
@@ -156,6 +126,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat_600SemiBold',
         color: '#222',
         textAlign: 'center',
+        width:300,
     },
     artist: {
         fontSize: 18,
@@ -174,33 +145,6 @@ const styles = StyleSheet.create({
         color: '#444',
         fontSize: 14,
         fontFamily: 'Montserrat_400Regular',
-    },
-    viewPlay: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        width: '100%',
-        marginTop: 12,
-        marginBottom: 100,
-    },
-    iconButton: {
-        width: 50,
-        height: 50,
-        backgroundColor: '#f0f0f0',
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-    },
-    playButton: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        backgroundColor: '#4c9aff',
     },
 
 });
