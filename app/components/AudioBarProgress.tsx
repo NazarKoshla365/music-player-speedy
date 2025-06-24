@@ -29,6 +29,9 @@ export const AudioBarProgress = ({
   const [isDragging, setIsDragging] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
 
+ 
+  const dragStartX = useRef(0);
+
   useEffect(() => {
     if (!isDragging) {
       const percentage = duration ? position / duration : 0;
@@ -42,6 +45,7 @@ export const AudioBarProgress = ({
   }, [position, duration, isDragging]);
 
   useEffect(() => {
+    if (isDragging) return; 
     const interval = setInterval(async () => {
       const status = await sound?.getStatusAsync();
       if (status?.isLoaded) {
@@ -51,22 +55,27 @@ export const AudioBarProgress = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [sound]);
+  }, [sound,isDragging]);
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
         setIsDragging(true);
+        progress.stopAnimation((value) => {
+          dragStartX.current = value; 
+        });
       },
       onPanResponderMove: (_, gesture) => {
-        const dx = Math.max(0, Math.min(gesture.moveX - 36, SCREEN_WIDTH));
-        progress.setValue(dx);
+        let newPos = dragStartX.current + gesture.dx;
+        newPos = Math.max(0, Math.min(newPos, SCREEN_WIDTH));
+        progress.setValue(newPos);
       },
       onPanResponderRelease: async (_, gesture) => {
         setIsDragging(false);
-        const clampedX = Math.max(0, Math.min(gesture.moveX - 36, SCREEN_WIDTH));
-        const newTime = (clampedX / SCREEN_WIDTH) * duration;
+        let newPos = dragStartX.current + gesture.dx;
+        newPos = Math.max(0, Math.min(newPos, SCREEN_WIDTH));
+        const newTime = (newPos / SCREEN_WIDTH) * duration;
 
         if (sound) {
           await sound.setPositionAsync(newTime);
@@ -84,11 +93,7 @@ export const AudioBarProgress = ({
       await sound.setPositionAsync(newTime);
     }
     setPosition(newTime);
-    Animated.timing(progress, {
-      toValue: clampedX,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
+    progress.setValue(clampedX);
   };
 
   return (
@@ -100,7 +105,10 @@ export const AudioBarProgress = ({
       >
         <Animated.View style={[styles.progress, { width: progress }]} />
         <Animated.View
-          style={[styles.thumb, { transform: [{ translateX: Animated.subtract(progress, 8) }] }]}
+          style={[
+            styles.thumb,
+            { transform: [{ translateX: Animated.subtract(progress, 8) }] },
+          ]}
           {...panResponder.panHandlers}
         />
       </View>
