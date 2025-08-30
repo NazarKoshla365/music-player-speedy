@@ -1,6 +1,5 @@
 export function formatTitle(filename: string) {
     if (filename) {
-
         const cleaned = filename
             .replace(/_/g, ' ')
             .replace(/\.(mp3|wav|m4a)$/i, '')
@@ -8,7 +7,6 @@ export function formatTitle(filename: string) {
             .replace(/\s*-\s*/g, ' - ')
             .replace(/ +/g, ' ')
             .trim();
-
         const parts = cleaned.split(' - ');
         if (parts.length === 2) return parts[1];
         return cleaned;

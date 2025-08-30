@@ -14,7 +14,6 @@ export const App = () => {
       shouldDuckAndroid: true,
     })
   }, [])
-
   return (
     <GestureHandlerRootView>
       <SafeAreaView style={styles.container}>
@@ -32,16 +31,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     paddingTop: 20,
     paddingBottom: 20,
-
   },
   image: {
     marginTop: 20,
     width: 200,
     height: 60,
-
-
   },
-
   heading: {
     fontSize: 32,
     fontWeight: "bold",

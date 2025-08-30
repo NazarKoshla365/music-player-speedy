@@ -1,33 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from "react-native";
 import * as MediaLibrary from 'expo-media-library';
 import { TabView, SceneMap } from 'react-native-tab-view'
 
-
-import { Songs } from "./Songs";
-import { Playlists } from "./Playlists";
-import { Favorites } from "./Favorites";
-import { Albums } from "./Albums";
-import { Artists } from "./Artists";
+import { Songs } from "./Tabs/Songs";
+import { Playlists } from "./Tabs/Playlists";
+import { Favorites } from "./Tabs/Favorites";
+import { Albums } from "./Tabs/Albums";
+import { Artists } from "./Tabs/Artists";
 
 
 export const SortTabs = () => {
   const layout = useWindowDimensions();
   const [index, setIndex] = useState(0);
+
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+  const scrollRef = useRef<ScrollView>(null)
 
   useEffect(() => {
     (async () => {
-      console.log("Запитуємо дозвіл на медіатеку...");
       const { status } = await MediaLibrary.requestPermissionsAsync();
-      console.log("Статус дозволу:", status);
+      console.log("Status", status);
       setHasPermission(status === 'granted')
     })()
-  }, [])  
-  console.log("Активна вкладка:", index);
-  console.log("Дозвіл на медіатеку:", hasPermission);
+  }, [])
 
-  const routes =  [
+  const routes = [
     { key: "songs", title: "Songs" },
     { key: "favorites", title: "Favorites" },
     { key: "playlists", title: "Playlists" },
@@ -42,16 +40,23 @@ export const SortTabs = () => {
     artists: Artists,
   })
 
+  const setActiveTab = (tabIndex: number) => {
+    setIndex(tabIndex)
+    scrollRef.current?.scrollTo({
+      x: tabIndex * 100,
+      animated: true
+    })
+  }
   const handleTabPress = (tabKey: string) => {
     const tabIndex = routes.findIndex(route => route.key === tabKey);
     if (tabIndex !== -1) {
-      setIndex(tabIndex);
+      setActiveTab(tabIndex)
     }
   };
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.wrapper}>
-        <ScrollView horizontal
+        <ScrollView ref={scrollRef} horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.container}>
           {routes.map((tab, i) => {
@@ -72,7 +77,7 @@ export const SortTabs = () => {
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}
-        onIndexChange={setIndex}
+        onIndexChange={setActiveTab}
         initialLayout={{ width: layout.width }}
         renderTabBar={() => null}
       />

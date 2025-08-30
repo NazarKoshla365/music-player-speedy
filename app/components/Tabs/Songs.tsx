@@ -3,9 +3,9 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import * as MediaLibrary from 'expo-media-library';
 import { useCallback, useEffect, useState } from "react";
 import { Button, FlatList, Image, Pressable, StyleSheet, Text, View, ListRenderItem } from "react-native";
-import { usePlayerStore } from "../store/playerStore";
-import { useAudioControls } from '../hooks/useAudioControls';
-import { SongItem } from './SongItem';
+import { usePlayerStore } from "@/app/store/playerStore";
+import { useAudioControls } from '@/app/hooks/useAudioControls';
+import { SongItem } from '../SongItem';
 
 interface SongsProps {
     hasPermission: boolean | null
