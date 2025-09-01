@@ -1,5 +1,5 @@
 import { SafeAreaView, View, Text, StyleSheet, Image, Pressable, Animated, Dimensions, PanResponder } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -9,38 +9,37 @@ import { usePlayerStore } from "../store/playerStore";
 import { AudioBarProgress } from "./AudioBarProgress";
 import { formatMilliseconds } from "../utils/audioUtils";
 import { PlaybackControll } from "./PlayBackControll";
-const { height } = Dimensions.get('window')
+const { height, width: screenWidth } = Dimensions.get('window')
 export const InterfacePlayer = () => {
     const { isOpenModal, activeSongData, setIsOpenModal } = usePlayerStore();
     const [position, setPosition] = useState<number>(0);
     const [duration, setDuration] = useState<number>(1);
 
-    const slideAnim = useState(new Animated.Value(height))[0];
-    const pan = useState(new Animated.Value(0))[0]
+    const slideAnim = useRef(new Animated.Value(height)).current
+    const pan = useRef(new Animated.Value(0)).current
+
     const closeModal = () => setIsOpenModal(false)
 
 
-    const topDragHeight = 150
+    const topDragHeight = 360
     const dragZoneWidth = 200
 
     const panResponder = PanResponder.create({
         onStartShouldSetPanResponder: (evt, gestureState) => {
             const { pageY, pageX } = evt.nativeEvent;
-            const screenWidth = Dimensions.get("window").width
             const leftBound = (screenWidth - dragZoneWidth) / 2;
             const rightBound = leftBound + dragZoneWidth;
             return pageY < topDragHeight && pageX > leftBound && pageX < rightBound;
         },
         onMoveShouldSetPanResponder: (evt, gestureState) => {
             const { pageY, pageX } = evt.nativeEvent;
-            const screenWidth = Dimensions.get("window").width
             const leftBound = (screenWidth - dragZoneWidth) / 2;
             const rightBound = leftBound + dragZoneWidth;
             return pageY < topDragHeight && pageX > leftBound && pageX < rightBound;
         },
         onPanResponderMove: (_, gestureState) => {
             if (gestureState.dy > 0) {
-                pan.setValue(gestureState.dy)
+                pan.setValue(gestureState.dy);
             }
         },
         onPanResponderRelease: (_, gestureState) => {
@@ -53,29 +52,21 @@ export const InterfacePlayer = () => {
                     setIsOpenModal(false)
                     pan.setValue(0)
                 })
-            } else {
-                Animated.spring(slideAnim, {
+            }
+            else {
+                Animated.spring(pan, {
                     toValue: 0,
                     useNativeDriver: true,
-                }).start()
+                }).start();
             }
         }
     })
     useEffect(() => {
-        if (isOpenModal) {
-            Animated.timing(slideAnim, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: true,
-            }).start()
-        }
-        else {
-            Animated.timing(slideAnim, {
-                toValue: height,
-                duration: 200,
-                useNativeDriver: true,
-            }).start();
-        }
+        Animated.timing(slideAnim, {
+            toValue: isOpenModal ? 0 : height,
+            duration: 200,
+            useNativeDriver: true,
+        }).start()
     }, [isOpenModal])
     return (
         <Animated.View {...panResponder.panHandlers} style={[styles.interfaceContainer, { transform: [{ translateY: Animated.add(slideAnim, pan) }] }]}>

@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
   Animated,
   Dimensions,
+
   PanResponder,
-  GestureResponderEvent,
+  Pressable
 } from "react-native";
 import { usePlayerStore } from "../store/playerStore";
 
@@ -18,6 +19,8 @@ interface AudioBarProgressProps {
 
 const SCREEN_WIDTH = Dimensions.get("window").width - 72;
 
+
+
 export const AudioBarProgress = ({
   position,
   setPosition,
@@ -25,28 +28,53 @@ export const AudioBarProgress = ({
   setDuration,
 }: AudioBarProgressProps) => {
   const { sound } = usePlayerStore();
-
-  const [isDragging, setIsDragging] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
+  const currentProgress = useRef(0);
+  const isDragging = useRef(false)
 
- 
-  const dragStartX = useRef(0);
+  const handleTrackPress = async (e: any) => {
+    const tapX = e.nativeEvent.locationX;
+    const clampedX = Math.max(0, Math.min(tapX, SCREEN_WIDTH));
+    progress.setValue(clampedX);
+    currentProgress.current = clampedX;
+    const newTime = (clampedX / SCREEN_WIDTH) * duration;
+    if (sound) await sound.setPositionAsync(newTime);
+    setPosition(newTime);
+  };
 
-  useEffect(() => {
-    if (!isDragging) {
-      const percentage = duration ? position / duration : 0;
-      const newWidth = percentage * SCREEN_WIDTH;
-      Animated.timing(progress, {
-        toValue: newWidth,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
+  const panResponder = PanResponder.create({
+    onStartShouldSetPanResponder: () => true,
+    onPanResponderGrant: () => isDragging.current = true,
+    onPanResponderMove: (_, gestureState) => {
+      const clampedX = Math.max(0, Math.min(gestureState.dx + currentProgress.current, SCREEN_WIDTH));
+      progress.setValue(clampedX);
+    },
+    onPanResponderRelease: async (_, gestureState) => {
+      const clampedX = Math.max(0, Math.min(gestureState.dx + currentProgress.current, SCREEN_WIDTH));
+      currentProgress.current = clampedX;
+      const newTime = (clampedX / SCREEN_WIDTH) * duration;
+      if (sound) await sound.setPositionAsync(newTime);
+      setPosition(newTime);
+      isDragging.current = false;
     }
-  }, [position, duration, isDragging]);
+  })
 
   useEffect(() => {
-    if (isDragging) return; 
+    if (isDragging.current) return;
+    const percentage = duration ? position / duration : 0;
+    const newWidth = percentage * SCREEN_WIDTH;
+    Animated.timing(progress, {
+      toValue: newWidth,
+      duration: 200,
+      useNativeDriver: false,
+    }).start(() => {
+      currentProgress.current = newWidth;
+    });
+  }, [position, duration]);
+
+  useEffect(() => {
     const interval = setInterval(async () => {
+      if (isDragging.current) return;
       const status = await sound?.getStatusAsync();
       if (status?.isLoaded) {
         setPosition(status.positionMillis || 0);
@@ -55,63 +83,23 @@ export const AudioBarProgress = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [sound,isDragging]);
+  }, [sound]);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        setIsDragging(true);
-        progress.stopAnimation((value) => {
-          dragStartX.current = value; 
-        });
-      },
-      onPanResponderMove: (_, gesture) => {
-        let newPos = dragStartX.current + gesture.dx;
-        newPos = Math.max(0, Math.min(newPos, SCREEN_WIDTH));
-        progress.setValue(newPos);
-      },
-      onPanResponderRelease: async (_, gesture) => {
-        setIsDragging(false);
-        let newPos = dragStartX.current + gesture.dx;
-        newPos = Math.max(0, Math.min(newPos, SCREEN_WIDTH));
-        const newTime = (newPos / SCREEN_WIDTH) * duration;
-
-        if (sound) {
-          await sound.setPositionAsync(newTime);
-        }
-        setPosition(newTime);
-      },
-    })
-  ).current;
-
-  const onBarPress = async (event: GestureResponderEvent) => {
-    const touchX = event.nativeEvent.locationX;
-    const clampedX = Math.max(0, Math.min(touchX, SCREEN_WIDTH));
-    const newTime = (clampedX / SCREEN_WIDTH) * duration;
-    if (sound) {
-      await sound.setPositionAsync(newTime);
-    }
-    setPosition(newTime);
-    progress.setValue(clampedX);
-  };
 
   return (
     <View style={styles.container}>
-      <View
-        style={styles.track}
-        onStartShouldSetResponder={() => true}
-        onResponderRelease={onBarPress}
+      <Pressable style={styles.track}
+        onPress={handleTrackPress}
       >
         <Animated.View style={[styles.progress, { width: progress }]} />
         <Animated.View
+          {...panResponder.panHandlers}
           style={[
             styles.thumb,
             { transform: [{ translateX: Animated.subtract(progress, 8) }] },
           ]}
-          {...panResponder.panHandlers}
         />
-      </View>
+      </Pressable>
     </View>
   );
 };
@@ -124,7 +112,7 @@ const styles = StyleSheet.create({
   },
   track: {
     width: "100%",
-    height: 6,
+    height: 8,
     backgroundColor: "#ccc",
     borderRadius: 3,
     position: "relative",
@@ -136,9 +124,9 @@ const styles = StyleSheet.create({
   },
   thumb: {
     position: "absolute",
-    top: -6,
-    width: 16,
-    height: 16,
+    top: -5,
+    width: 18,
+    height: 18,
     borderRadius: 8,
     backgroundColor: "#1DB954",
     zIndex: 10,
