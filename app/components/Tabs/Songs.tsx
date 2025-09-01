@@ -15,7 +15,6 @@ export const Songs = ({ hasPermission }: SongsProps) => {
     const { togglePlayBack, PlayNextSong, PlaySong } = useAudioControls()
     const [songsCount, setSongsCount] = useState<number>(0)
 
-
     useEffect(() => {
         if (!hasPermission) return;
         (async () => {
@@ -58,7 +57,7 @@ export const Songs = ({ hasPermission }: SongsProps) => {
                 keyExtractor={item => item.id}
                 showsVerticalScrollIndicator={false}
                 windowSize={5}
-                 removeClippedSubviews={true}
+                removeClippedSubviews={true}
             />
             {itemPlay && (
                 <Pressable onPress={() => setIsOpenModal(true)}>

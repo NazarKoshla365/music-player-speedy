@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, Image, Pressable } from "react-native";
-import { useRef, useCallback, useMemo, useEffect, useState } from "react";
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { SafeAreaView, View, Text, StyleSheet, Image, Pressable, Animated, Dimensions, PanResponder } from "react-native";
+import { useEffect, useState } from "react";
+
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 
@@ -9,81 +9,129 @@ import { usePlayerStore } from "../store/playerStore";
 import { AudioBarProgress } from "./AudioBarProgress";
 import { formatMilliseconds } from "../utils/audioUtils";
 import { PlaybackControll } from "./PlayBackControll";
-
+const { height } = Dimensions.get('window')
 export const InterfacePlayer = () => {
-    const {  isOpenModal, activeSongData, setIsOpenModal } = usePlayerStore();
+    const { isOpenModal, activeSongData, setIsOpenModal } = usePlayerStore();
     const [position, setPosition] = useState<number>(0);
     const [duration, setDuration] = useState<number>(1);
 
-    const bottomSheetRef = useRef<BottomSheet>(null);
-    const handleSheetChanges = useCallback((index: number) => {
-        console.log('handleSheetChanges', index);
-    }, []);
-    const snapPoints = useMemo(() => ['100%'], []);
+    const slideAnim = useState(new Animated.Value(height))[0];
+    const pan = useState(new Animated.Value(0))[0]
+    const closeModal = () => setIsOpenModal(false)
 
-    const openSheet = () => bottomSheetRef.current?.expand();
-    const closeSheet = () => {
-        bottomSheetRef.current?.close();
-        setIsOpenModal(false);
-    };
 
+    const topDragHeight = 150
+    const dragZoneWidth = 200
+
+    const panResponder = PanResponder.create({
+        onStartShouldSetPanResponder: (evt, gestureState) => {
+            const { pageY, pageX } = evt.nativeEvent;
+            const screenWidth = Dimensions.get("window").width
+            const leftBound = (screenWidth - dragZoneWidth) / 2;
+            const rightBound = leftBound + dragZoneWidth;
+            return pageY < topDragHeight && pageX > leftBound && pageX < rightBound;
+        },
+        onMoveShouldSetPanResponder: (evt, gestureState) => {
+            const { pageY, pageX } = evt.nativeEvent;
+            const screenWidth = Dimensions.get("window").width
+            const leftBound = (screenWidth - dragZoneWidth) / 2;
+            const rightBound = leftBound + dragZoneWidth;
+            return pageY < topDragHeight && pageX > leftBound && pageX < rightBound;
+        },
+        onPanResponderMove: (_, gestureState) => {
+            if (gestureState.dy > 0) {
+                pan.setValue(gestureState.dy)
+            }
+        },
+        onPanResponderRelease: (_, gestureState) => {
+            if (gestureState.dy > 100) {
+                Animated.timing(slideAnim, {
+                    toValue: height,
+                    duration: 200,
+                    useNativeDriver: true,
+                }).start(() => {
+                    setIsOpenModal(false)
+                    pan.setValue(0)
+                })
+            } else {
+                Animated.spring(slideAnim, {
+                    toValue: 0,
+                    useNativeDriver: true,
+                }).start()
+            }
+        }
+    })
     useEffect(() => {
         if (isOpenModal) {
-            openSheet();
-            console.log(activeSongData);
+            Animated.timing(slideAnim, {
+                toValue: 0,
+                duration: 200,
+                useNativeDriver: true,
+            }).start()
         }
-    }, [isOpenModal]);
-
+        else {
+            Animated.timing(slideAnim, {
+                toValue: height,
+                duration: 200,
+                useNativeDriver: true,
+            }).start();
+        }
+    }, [isOpenModal])
     return (
-        <BottomSheet
-            handleIndicatorStyle={{ display: 'none' }}
-            enableContentPanningGesture={false}
-            onChange={handleSheetChanges}
-            ref={bottomSheetRef}
-            snapPoints={snapPoints}
-            index={-1}
-        >
-            <LinearGradient colors={['#f7f8fc', '#eaeaea']} style={styles.gradientContainer}>
-                <BottomSheetView style={styles.contentContainer}>
-                    {/* Upper Content */}
-                    <View style={styles.upperContent}>
-                        <View style={styles.topContainer}>
-                            <Pressable onPress={closeSheet}>
-                                <AntDesign name="arrowleft" size={32} color="#333" />
-                            </Pressable>
-                            <Pressable>
-                                <Entypo name="dots-three-vertical" size={24} color="#333" />
-                            </Pressable>
-                        </View>
+        <Animated.View {...panResponder.panHandlers} style={[styles.interfaceContainer, { transform: [{ translateY: Animated.add(slideAnim, pan) }] }]}>
+            <SafeAreaView style={styles.safeArea}>
+                <LinearGradient colors={['#fdfdfd', '#e6e6e6']} style={styles.gradientContainer}>
+                    <View style={styles.contentContainer}>
+                        <View style={styles.upperContent}>
+                            <View style={styles.topContainer}>
+                                <Pressable onPress={closeModal}>
+                                    <AntDesign name="arrowleft" size={32} color="#333" />
+                                </Pressable>
+                                <Pressable>
+                                    <Entypo name="dots-three-vertical" size={24} color="#333" />
+                                </Pressable>
+                            </View>
 
-                        <View style={styles.contentDescContainer}>
-                            <Image style={styles.imageCover} source={require('@/assets/images/cover.jpg')} />
-                            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>{activeSongData?.title}</Text>
-                            <Text style={styles.artist}>{activeSongData?.artist}</Text>
-                        </View>
+                            <View style={styles.contentDescContainer}>
+                                <Image style={styles.imageCover} source={require('@/assets/images/cover.jpg')} />
+                                <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>{activeSongData?.title}</Text>
+                                <Text style={styles.artist}>{activeSongData?.artist}</Text>
+                            </View>
 
-                        <View style={{ width: '100%' }}>
-                            <AudioBarProgress
-                                position={position}
-                                setPosition={setPosition}
-                                duration={duration}
-                                setDuration={setDuration}
-                            />
-                            <View style={styles.viewSongTime}>
-                                <Text style={styles.timeText}>{formatMilliseconds(position)}</Text>
-                                <Text style={styles.timeText}>{activeSongData?.duration}</Text>
+                            <View style={{ width: '100%' }}>
+                                <AudioBarProgress
+                                    position={position}
+                                    setPosition={setPosition}
+                                    duration={duration}
+                                    setDuration={setDuration}
+                                />
+                                <View style={styles.viewSongTime}>
+                                    <Text style={styles.timeText}>{formatMilliseconds(position)}</Text>
+                                    <Text style={styles.timeText}>{activeSongData?.duration}</Text>
+                                </View>
                             </View>
                         </View>
+                        <PlaybackControll />
                     </View>
-                    {/* Playback Controls */}
-                   <PlaybackControll/>
-                </BottomSheetView>
-            </LinearGradient>
-        </BottomSheet>
-    );
+                </LinearGradient>
+            </SafeAreaView>
+        </Animated.View>
+
+    )
 };
 
 const styles = StyleSheet.create({
+    interfaceContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 999,
+    },
+    safeArea: {
+        flex: 1,
+    },
     gradientContainer: {
         flex: 1,
         borderTopLeftRadius: 24,
@@ -93,22 +141,25 @@ const styles = StyleSheet.create({
     contentContainer: {
         flex: 1,
         padding: 24,
-        justifyContent: 'space-between', 
+        justifyContent: 'space-between',
     },
     upperContent: {
         alignItems: 'center',
+
     },
     topContainer: {
         width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginTop: 20,
+        marginBottom: 40,
     },
     contentDescContainer: {
         flexDirection: 'column',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 120,
+        marginTop: 20,
     },
     imageCover: {
         width: 220,
@@ -126,7 +177,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat_600SemiBold',
         color: '#222',
         textAlign: 'center',
-        width:300,
+        width: 300,
     },
     artist: {
         fontSize: 18,

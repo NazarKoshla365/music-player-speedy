@@ -61,7 +61,6 @@ export const SortTabs = () => {
           style={styles.container}>
           {routes.map((tab, i) => {
             const isActive = i === index;
-
             return (
               <TouchableOpacity
                 key={tab.key}

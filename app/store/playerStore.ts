@@ -28,7 +28,6 @@ interface PlayerStore {
     setActiveSongData: (activeSongData: SongData) => void
     activeSongIndex: number | null
     setActiveSongIndex: (index: number | null) => void;
-
 }
 export const usePlayerStore = create<PlayerStore>((set) => ({
     songs: [],

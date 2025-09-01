@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { InterfacePlayer } from "./InterfacePlayer";
 import { useEffect } from "react";
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from "expo-av";
+
 export const App = () => {
   useEffect(() => {
     Audio.setAudioModeAsync({
@@ -14,12 +15,13 @@ export const App = () => {
       shouldDuckAndroid: true,
     })
   }, [])
+
   return (
     <GestureHandlerRootView>
       <SafeAreaView style={styles.container}>
         <Image source={require('@/assets/images/speedy-logo.png')} style={styles.image} resizeMode="cover"></Image>
         <SortTabs />
-        <InterfacePlayer />
+        <InterfacePlayer  />
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -34,11 +36,11 @@ const styles = StyleSheet.create({
   },
   image: {
     marginTop: 20,
-    width: 200,
-    height: 60,
+    width: 170,
+    height: 40,
   },
   heading: {
     fontSize: 32,
     fontWeight: "bold",
-  },
+  } 
 });

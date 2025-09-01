@@ -1,27 +1,39 @@
 
 import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useCallback } from "react";
+import { AppState } from 'react-native';
 import { usePlayerStore } from "../store/playerStore";
 import { calculateTime, formatArtist, formatTitle } from "../utils/audioUtils";
 import { Audio } from "expo-av";
 
-
 export const useAudioControls = () => {
-    const { sound, isShuffle, setIsShuffle, isSoundLoop, setIsSoundLoop, songs, setIsPlay, activeSongData, setActiveSongData, setItemPlay, setSound, setActiveSongIndex, activeSongIndex } = usePlayerStore()
 
-
-    
+    const { sound, isShuffle, setIsShuffle, isSoundLoop, setIsSoundLoop, songs, setIsPlay, setActiveSongData, setItemPlay, setSound, setActiveSongIndex, activeSongIndex } = usePlayerStore()
+    useEffect(() => {
+        const subscription = AppState.addEventListener("change", async (nextAppState) => {
+            const currentSound = usePlayerStore.getState().sound
+            const currentIsPlay = usePlayerStore.getState().isPlay
+            if ((nextAppState === "active") && currentIsPlay && currentSound) {
+                    const status = await currentSound.getStatusAsync();
+                    if (status.isLoaded && !status.isPlaying) {
+                        await currentSound.playAsync();
+                    }
+            }
+        });
+        return () => {
+            subscription.remove()
+        }
+    }, [])
     const PlaySongbyIndex = useCallback(async (index: number) => {
         const song = songs[index];
         const currentSound = usePlayerStore.getState().sound;
-
         if (currentSound) {
             try {
                 await currentSound.stopAsync();
                 await currentSound.unloadAsync();
             } catch (e) {
                 console.warn('Помилка при розвантаженні sound:', e);
-                 return; 
+                return;
             }
         }
         const { sound: newSound } = await Audio.Sound.createAsync(
@@ -104,7 +116,7 @@ export const useAudioControls = () => {
     }, [isShuffle, setIsShuffle]);
 
 
-useEffect(() => {
+    useEffect(() => {
         if (!sound) return
         const checkIsFinishSong = async () => {
             sound.setOnPlaybackStatusUpdate((status) => {
@@ -119,7 +131,7 @@ useEffect(() => {
         return (() => {
             sound.setOnPlaybackStatusUpdate(null)
         })
-    }, [sound, isSoundLoop,PlayNextSong])
+    }, [sound, isSoundLoop, PlayNextSong])
 
     return { togglePlayBack, toggleRepeatPlayback, toggleShufflePlayback, PlaySong, PlayNextSong, PlayPrevSong }
 }
