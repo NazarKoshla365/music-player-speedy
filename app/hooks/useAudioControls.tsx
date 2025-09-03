@@ -1,33 +1,25 @@
 
 import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useCallback } from "react";
-import { AppState } from 'react-native';
+
 import { usePlayerStore } from "../store/playerStore";
 import { calculateTime, formatArtist, formatTitle } from "../utils/audioUtils";
 import { Audio } from "expo-av";
 
-export const useAudioControls = () => {
 
+export const useAudioControls = () => {
+ 
     const { sound, isShuffle, setIsShuffle, isSoundLoop, setIsSoundLoop, songs, setIsPlay, setActiveSongData, setItemPlay, setSound, setActiveSongIndex, activeSongIndex } = usePlayerStore()
-    useEffect(() => {
-        const subscription = AppState.addEventListener("change", async (nextAppState) => {
-            const currentSound = usePlayerStore.getState().sound
-            const currentIsPlay = usePlayerStore.getState().isPlay
-            if ((nextAppState === "active") && currentIsPlay && currentSound) {
-                    const status = await currentSound.getStatusAsync();
-                    if (status.isLoaded && !status.isPlaying) {
-                        await currentSound.playAsync();
-                    }
-            }
-        });
-        return () => {
-            subscription.remove()
-        }
-    }, [])
+
+   
+
+    /*Function play song by index*/
     const PlaySongbyIndex = useCallback(async (index: number) => {
         const song = songs[index];
         const currentSound = usePlayerStore.getState().sound;
+        
         if (currentSound) {
+             currentSound.setOnPlaybackStatusUpdate(null);
             try {
                 await currentSound.stopAsync();
                 await currentSound.unloadAsync();
@@ -52,6 +44,8 @@ export const useAudioControls = () => {
         setIsPlay(true);
         setItemPlay(true);
     }, [sound, songs, setSound, setActiveSongData, setActiveSongIndex, setIsPlay, setItemPlay]);
+
+    /* Function find Song by index and pass to PlayByIndex*/
     const PlaySong = useCallback(async (song: MediaLibrary.Asset) => {
         const index = songs.findIndex(s => s.id === song.id);
         if (index !== -1) {
@@ -59,7 +53,7 @@ export const useAudioControls = () => {
         }
     }, [PlaySongbyIndex])
 
-
+    /* Function play next song*/
     const PlayNextSong = useCallback(async () => {
         if (activeSongIndex === null) return;
         if (isShuffle) {
@@ -74,7 +68,7 @@ export const useAudioControls = () => {
         }
     }, [isShuffle, activeSongIndex, PlaySongbyIndex, songs.length])
 
-
+    /* Function play prev song*/
     const PlayPrevSong = useCallback(async () => {
         if (activeSongIndex === null) return;
         let prevIndex = activeSongIndex - 1
@@ -84,7 +78,7 @@ export const useAudioControls = () => {
         await PlaySongbyIndex(prevIndex)
     }, [activeSongIndex, songs.length, PlaySongbyIndex])
 
-
+    /* Function do pause and play of song*/
     const togglePlayBack = useCallback(async () => {
         if (!sound) return;
 
@@ -99,9 +93,10 @@ export const useAudioControls = () => {
             }
         }
     }, [sound, setIsPlay]);
+
+    /* Function repeat song*/
     const toggleRepeatPlayback = useCallback(async () => {
         if (!sound) return;
-
         const status = await sound.getStatusAsync();
         if (status.isLoaded) {
             const newLoop = !status.isLooping;
@@ -110,7 +105,7 @@ export const useAudioControls = () => {
         }
     }, [sound, setIsSoundLoop])
 
-
+    /* Function do shuffle*/
     const toggleShufflePlayback = useCallback(() => {
         setIsShuffle(!isShuffle);
     }, [isShuffle, setIsShuffle]);
@@ -119,6 +114,7 @@ export const useAudioControls = () => {
     useEffect(() => {
         if (!sound) return
         const checkIsFinishSong = async () => {
+
             sound.setOnPlaybackStatusUpdate((status) => {
                 if (status.isLoaded && status.didJustFinish) {
                     if (!isSoundLoop) {
@@ -132,6 +128,9 @@ export const useAudioControls = () => {
             sound.setOnPlaybackStatusUpdate(null)
         })
     }, [sound, isSoundLoop, PlayNextSong])
+
+
+    
 
     return { togglePlayBack, toggleRepeatPlayback, toggleShufflePlayback, PlaySong, PlayNextSong, PlayPrevSong }
 }

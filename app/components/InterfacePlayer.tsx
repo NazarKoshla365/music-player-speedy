@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
+import { useBluetoothSupport } from "../hooks/useBluetoothSupport";
 
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePlayerStore } from "../store/playerStore";
@@ -23,6 +24,7 @@ export const InterfacePlayer = () => {
 
     const topDragHeight = 360
     const dragZoneWidth = 200
+    useBluetoothSupport()
 
     const panResponder = PanResponder.create({
         onStartShouldSetPanResponder: (evt, gestureState) => {
