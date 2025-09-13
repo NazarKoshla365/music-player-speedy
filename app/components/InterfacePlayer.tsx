@@ -8,7 +8,7 @@ import { useBluetoothSupport } from "../hooks/useBluetoothSupport";
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePlayerStore } from "../store/playerStore";
 import { AudioBarProgress } from "./AudioBarProgress";
-import { formatMilliseconds } from "../utils/audioUtils";
+import { formatMilliseconds,formatTime } from "../utils/audioUtils";
 import { PlaybackControll } from "./PlayBackControll";
 const { height, width: screenWidth } = Dimensions.get('window')
 export const InterfacePlayer = () => {
@@ -21,11 +21,10 @@ export const InterfacePlayer = () => {
 
     const closeModal = () => setIsOpenModal(false)
 
-
     const topDragHeight = 360
     const dragZoneWidth = 200
-    useBluetoothSupport()
 
+    useBluetoothSupport()
     const panResponder = PanResponder.create({
         onStartShouldSetPanResponder: (evt, gestureState) => {
             const { pageY, pageX } = evt.nativeEvent;
@@ -86,7 +85,7 @@ export const InterfacePlayer = () => {
                             </View>
 
                             <View style={styles.contentDescContainer}>
-                                <Image style={styles.imageCover} source={require('@/assets/images/cover.jpg')} />
+                                <Image style={styles.imageCover} source={activeSongData?.cover ? { uri: `data:image/jpeg;base64,${activeSongData.cover}`} : require('@/assets/images/cover.jpg')} />
                                 <Text numberOfLines={1} ellipsizeMode="tail" style={styles.title}>{activeSongData?.title}</Text>
                                 <Text style={styles.artist}>{activeSongData?.artist}</Text>
                             </View>
@@ -100,7 +99,7 @@ export const InterfacePlayer = () => {
                                 />
                                 <View style={styles.viewSongTime}>
                                     <Text style={styles.timeText}>{formatMilliseconds(position)}</Text>
-                                    <Text style={styles.timeText}>{activeSongData?.duration}</Text>
+                                    <Text style={styles.timeText}>{formatTime(activeSongData?.duration ?? 0)}</Text>
                                 </View>
                             </View>
                         </View>

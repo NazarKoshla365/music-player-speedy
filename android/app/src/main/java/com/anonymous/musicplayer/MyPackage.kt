@@ -7,7 +7,10 @@ import com.facebook.react.uimanager.ViewManager
 
 class MyPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-        return listOf(MyMediaModule(reactContext))
+        return listOf(
+            MyMediaModule(reactContext),
+            MyAudioParserModule(reactContext)
+            )
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {

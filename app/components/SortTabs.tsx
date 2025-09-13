@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView, useWindowDimensions } from "react-native";
 import * as MediaLibrary from 'expo-media-library';
 import { TabView, SceneMap } from 'react-native-tab-view'
 
@@ -62,13 +62,13 @@ export const SortTabs = () => {
           {routes.map((tab, i) => {
             const isActive = i === index;
             return (
-              <TouchableOpacity
+              <Pressable
                 key={tab.key}
                 style={[styles.tab, isActive ? styles.activeTab : styles.inactiveTab]}
                 onPress={() => handleTabPress(tab.key)}
               >
                 <Text style={isActive ? styles.activeText : styles.inactiveText}>{tab.title}</Text>
-              </TouchableOpacity>
+              </Pressable>
             );
           })}
         </ScrollView>
@@ -116,8 +116,5 @@ const styles = StyleSheet.create({
   inactiveText: {
     color: "#000",
     fontSize: 18,
-
-
-
   },
 });

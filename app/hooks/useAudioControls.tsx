@@ -3,23 +3,23 @@ import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useCallback } from "react";
 
 import { usePlayerStore } from "../store/playerStore";
-import { calculateTime, formatArtist, formatTitle } from "../utils/audioUtils";
+import { formatTime, formatArtist, formatTitle } from "../utils/audioUtils";
 import { Audio } from "expo-av";
 
 
 export const useAudioControls = () => {
- 
+
     const { sound, isShuffle, setIsShuffle, isSoundLoop, setIsSoundLoop, songs, setIsPlay, setActiveSongData, setItemPlay, setSound, setActiveSongIndex, activeSongIndex } = usePlayerStore()
 
-   
+
 
     /*Function play song by index*/
     const PlaySongbyIndex = useCallback(async (index: number) => {
         const song = songs[index];
         const currentSound = usePlayerStore.getState().sound;
-        
+
         if (currentSound) {
-             currentSound.setOnPlaybackStatusUpdate(null);
+            currentSound.setOnPlaybackStatusUpdate(null);
             try {
                 await currentSound.stopAsync();
                 await currentSound.unloadAsync();
@@ -35,10 +35,14 @@ export const useAudioControls = () => {
         setSound(newSound);
         setActiveSongData({
             id: song.id,
-            title: formatTitle(song.filename),
-            artist: formatArtist(song.filename),
-            duration: calculateTime(song.duration),
+            filename: song.filename,
             uri: song.uri,
+            modificationTime: song.modificationTime,
+            duration: song.duration,
+            title: song.title ? song.title : formatTitle(song.filename),
+            artist: song.artist ? song.artist : formatArtist(song.filename),
+            album: song.album,
+            cover: song.cover,
         });
         setActiveSongIndex(index);
         setIsPlay(true);
@@ -130,7 +134,7 @@ export const useAudioControls = () => {
     }, [sound, isSoundLoop, PlayNextSong])
 
 
-    
+
 
     return { togglePlayBack, toggleRepeatPlayback, toggleShufflePlayback, PlaySong, PlayNextSong, PlayPrevSong }
 }

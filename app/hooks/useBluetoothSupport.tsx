@@ -9,12 +9,12 @@ export const useBluetoothSupport = () => {
   const mediaEventEmitter = useRef<NativeEventEmitter | null>(null);
   const actionsRef = useRef({ togglePlayBack, PlayNextSong, PlayPrevSong });
 
-  // оновлюємо реф на актуальні функції
+
   useEffect(() => {
     actionsRef.current = { togglePlayBack, PlayNextSong, PlayPrevSong };
   }, [togglePlayBack, PlayNextSong, PlayPrevSong]);
 
-  // ініціалізація MediaSession
+
   useEffect(() => {
     console.log("Init MyMediaModule...");
     MyMediaModule?.initMediaSession?.();
@@ -26,7 +26,7 @@ export const useBluetoothSupport = () => {
     };
   }, []);
 
-  // підписка на події
+  
   useEffect(() => {
     if (!mediaEventEmitter.current) return;
 

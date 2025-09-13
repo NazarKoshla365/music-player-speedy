@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from "expo-av";
 import { SearchSongs } from "./SearchSongs";
 
+
 export const App = () => {
   const [isOpenSearchModal, setIsOpenSearchModal] = useState<boolean>(false)
   useEffect(() => {
@@ -29,6 +30,7 @@ export const App = () => {
           <Image source={require('@/assets/images/speedy-logo.png')} style={styles.image} resizeMode="cover"></Image>
           <Pressable onPress={() => setIsOpenSearchModal(true)} style={styles.searchBtn}>
             <AntDesign name="search1" size={26} color="black" />
+           
           </Pressable>
         </View>
         <SortTabs />

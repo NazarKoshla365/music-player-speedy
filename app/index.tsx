@@ -6,7 +6,5 @@ export default function Index() {
     <View style={{ flex: 1 }} >
       <App />
     </View>
-
-
   )
 }

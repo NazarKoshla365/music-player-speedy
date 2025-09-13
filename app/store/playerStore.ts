@@ -1,17 +1,21 @@
 import { Audio } from 'expo-av';
 import { create } from 'zustand';
-import * as MediaLibrary from 'expo-media-library';
+
 
 interface SongData {
     id: string;
-    title: string;
-    artist: string;
-    duration: string;
-    uri: string;
+    filename:string;
+    uri:string;
+    modificationTime:number;
+    duration: number;
+    title?: string;
+    artist?: string;
+    album?: string;
+    cover?: string;
 }
 interface PlayerStore {
-    songs: MediaLibrary.Asset[]
-    setSongs: (songs: MediaLibrary.Asset[]) => void
+    songs: SongData[]
+    setSongs: (songs: SongData[]) => void
     sound: Audio.Sound | null
     setSound: (sound: Audio.Sound | null) => void
     isSoundLoop: boolean
@@ -25,7 +29,7 @@ interface PlayerStore {
     itemPlay: boolean
     setItemPlay: (itemPlay: boolean) => void
     activeSongData: SongData | null
-    setActiveSongData: (activeSongData: SongData) => void
+    setActiveSongData: (activeSongData: SongData | null) => void
     activeSongIndex: number | null
     setActiveSongIndex: (index: number | null) => void;
 }

@@ -14,20 +14,20 @@ class MyMediaModule(reactContext: ReactApplicationContext) : ReactContextBaseJav
 
     override fun getName(): String = "MyMediaModule"
 
-    // TurboModule вимога для NativeEventEmitter
+    
         @ReactMethod
     fun addListener(eventName: String?) {
-        // нічого не робимо
+
     }
 
     @ReactMethod
     fun removeListeners(count: Int) {
-        // нічого не робимо
+     
     }
 
     @ReactMethod
     fun initMediaSession() {
-        if (mediaSession != null) return  // вже ініціалізовано
+        if (mediaSession != null) return  
 
         Log.d("MyMediaModule", "Initializing MediaSession")
 
